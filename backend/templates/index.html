@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juppelin - 로컬 데이터 분석 도구</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <h1>Juppelin</h1>
+                <span class="version">v1.0.0</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item">파일</button>
+                <button class="nav-item">편집</button>
+                <button class="nav-item">실행</button>
+                <button class="nav-item">설정</button>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="theme-toggle">
+                <span>다크 모드</span>
+                <input type="checkbox" id="theme-toggle" checked>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Left Panel: Code Editor -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <h3>코드 편집기</h3>
+                <button class="btn-add-cell" id="add-cell-btn">+ 셀 추가</button>
+            </div>
+            
+            <div class="cells-container" id="cells-container">
+                <!-- 초기 셀 -->
+                <div class="code-cell" data-cell-id="cell-1">
+                    <div class="cell-header">
+                        <span class="cell-number">[ ]:</span>
+                        <div class="cell-controls">
+                            <button class="btn-run" onclick="runCell('cell-1')">실행</button>
+                            <button class="btn-delete" onclick="deleteCell('cell-1')">삭제</button>
+                        </div>
+                    </div>
+                    <div class="cell-editor" id="editor-cell-1">
+# Juppelin에 오신 것을 환영합니다!
+# 아래 예제를 실행해보세요
+
+print("Hello, Juppelin!")
+                    </div>
+                    <div class="cell-output" id="output-cell-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Visualization -->
+        <div class="right-panel">
+            <div class="panel-header">
+                <h3>시각화</h3>
+                <div class="chart-controls">
+                    <button class="btn-clear-charts">차트 지우기</button>
+                </div>
+            </div>
+            
+            <div class="charts-container" id="charts-container">
+                <div class="welcome-message">
+                    <h4>📊 시각화 영역</h4>
+                    <p>코드를 실행하면 여기에 차트가 표시됩니다.</p>
+                    <div class="example-code">
+                        <h5>예제 코드:</h5>
+                        <pre><code># 데이터 수집
+data = load_binance_data('BTCUSDT', '2025-01-01', 30)
+
+# 시각화
+plot_candlestick(data)</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+        <div class="status-left">
+            <span class="status-item" id="connection-status">연결 중...</span>
+            <span class="status-item">마지막 업데이트: <span id="last-update">-</span></span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">로컬 저장소: <span id="storage-usage">계산 중...</span></span>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

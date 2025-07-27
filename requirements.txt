@@ -1,0 +1,25 @@
+# Juppelin Requirements - Minimal Setup
+# Core Framework
+flask==2.3.2
+flask-cors==4.0.0
+flask-socketio==5.3.4
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
+
+# Visualization
+plotly==5.15.0
+
+# API Clients
+requests==2.31.0
+
+# Environment & Configuration
+python-dotenv==1.0.0
+
+# Jupyter Integration (minimal)
+ipykernel==6.24.0
+jupyter-client==8.3.0
+
+# File Processing
+openpyxl==3.1.2
