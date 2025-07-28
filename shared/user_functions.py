@@ -34,14 +34,11 @@ try:
     _tech_indicators = TechnicalIndicators()
     _viz_service = VisualizationService()
     _services_loaded = True
-    print("Services loaded successfully")
     
 except ImportError as e:
-    print(f"WARNING: 서비스 모듈 임포트 실패: {e}")
+    pass  # 서비스 모듈 임포트 실패 시 무시
 except Exception as e:
-    print(f"ERROR: 서비스 초기화 실패: {e}")
-    import traceback
-    traceback.print_exc()
+    pass  # 서비스 초기화 실패 시 무시
 
 def test_services():
     """서비스 로드 상태 테스트"""
@@ -67,6 +64,7 @@ def simple_test():
     try:
         print("Hello from Juppelin!")
         print("Simple test completed successfully.")
+        print("Ready for data analysis!")
         return True
     except Exception as e:
         print(f"Simple test failed: {str(e)}")
@@ -444,11 +442,8 @@ def load_binance_data(
         OHLCV 데이터가 포함된 pandas DataFrame
     """
     try:
-        print(f"바이낸스에서 {symbol} 데이터를 수집하는 중...")
-        
         if _data_service is None:
             raise ImportError("데이터 수집 서비스를 사용할 수 없습니다.")
-        
         df = _data_service.collect_binance_data(
             symbol=symbol,
             start_date=start_date,
@@ -456,19 +451,9 @@ def load_binance_data(
             interval=interval,
             save_file=True
         )
-        
-        print(f"데이터 수집 완료: {len(df)}행")
-        if len(df) > 0:
-            print(f"기간: {df.index[0]} ~ {df.index[-1]}")
-        else:
-            print("수집된 데이터가 없습니다.")
-        
+        # DataFrame이 반환될 때는 출력하지 않음 (중복 탭 방지)
         return df
-        
     except Exception as e:
-        print(f"데이터 수집 실패: {str(e)}")
-        import traceback
-        traceback.print_exc()
         raise
 
 def load_local_data(filename: str) -> pd.DataFrame:

@@ -55,79 +55,54 @@ def execute_code():
 def execute_python_code(code):
     """Python 코드 실행 (임시 구현)"""
     try:
-        # 프로젝트 루트 디렉토리 계산
         backend_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(backend_dir)
         shared_dir = os.path.join(project_root, 'shared')
-        
-        # 사용자 함수 라이브러리 임포트 코드 추가
-        imports = f"""
-import sys
-import os
-
-# 프로젝트 경로들 추가
-sys.path.append(r'{shared_dir}')
-sys.path.append(r'{backend_dir}')
-sys.path.append(r'{project_root}')
-
-# 기본 라이브러리들
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-
-# 사용자 함수 라이브러리 임포트
-try:
-    from user_functions import *
-    print("User functions imported successfully")
-except Exception as e:
-    print(f"Failed to import user functions: {{e}}")
-    import traceback
-    traceback.print_exc()
-
-"""
-        
-        # 사용자 코드와 함께 실행할 전체 코드
-        full_code = imports + code
-        
-        # 임시 파일에 코드 저장
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, encoding='utf-8') as f:
-            f.write(full_code)
-            temp_file = f.name
-        
-        # 가상환경의 Python 실행
+        # 임시 코드 파일 없이, execute_with_result.py로 전달
         venv_python = get_venv_python()
-        
-        # 코드 실행
+        exec_script = os.path.join(backend_dir, 'execute_with_result.py')
+        env = os.environ.copy()
+        env['PYTHONPATH'] = shared_dir + os.pathsep + backend_dir + os.pathsep + project_root
         result = subprocess.run(
-            [str(venv_python), temp_file],
+            [str(venv_python), exec_script, code],
             capture_output=True,
             text=True,
-            encoding='utf-8',
-            timeout=30  # 30초 타임아웃
+            encoding='cp949',
+            errors='replace',
+            timeout=30,
+            env=env
         )
-        
-        # 임시 파일 삭제
-        os.unlink(temp_file)
-        
         outputs = []
-        
-        # 표준 출력이 있으면 추가
+        # DataFrame JSON 결과 추출
+        df_json = None
         if result.stdout:
-            outputs.append({
-                'output_type': 'stream',
-                'name': 'stdout',
-                'text': result.stdout
-            })
-        
-        # 표준 에러가 있으면 추가
+            out = result.stdout
+            if '__DF_JSON_START__' in out and '__DF_JSON_END__' in out:
+                start = out.index('__DF_JSON_START__') + len('__DF_JSON_START__')
+                end = out.index('__DF_JSON_END__')
+                try:
+                    df_json = json.loads(out[start:end])
+                except Exception:
+                    df_json = None
+                # 표준 출력에서 DataFrame JSON 부분 제거
+                out = out.replace(result.stdout[start-len('__DF_JSON_START__'):end+len('__DF_JSON_END__')], '')
+            if out.strip():
+                outputs.append({
+                    'output_type': 'stream',
+                    'name': 'stdout',
+                    'text': out
+                })
         if result.stderr:
             outputs.append({
                 'output_type': 'stream',
                 'name': 'stderr',
                 'text': result.stderr
             })
-        
-        # 실행 성공/실패 판단
+        if df_json:
+            outputs.append({
+                'output_type': 'dataframe',
+                'data': df_json
+            })
         if result.returncode == 0:
             return {
                 'status': 'success',
@@ -139,7 +114,6 @@ except Exception as e:
                 'error_message': result.stderr or '실행 중 오류가 발생했습니다.',
                 'outputs': outputs
             }
-            
     except subprocess.TimeoutExpired:
         return {
             'status': 'error',
